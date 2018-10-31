@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en-us"
+      style="background:violet;padding:50px;padding-left:90px">
+<head>
+  <meta charset="UTF-8">
+  <title>Hangman game!</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script><!-- Added a link to Bootstrap-->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        rel="stylesheet">
+</head>
+<body style="background:transparent">
+  <div class="gameBox"
+       style="width: 1350px; font-size: 30px; font-weight: bold; background:darkorchid;padding: 30px">
+    <h1 style="padding-left: 140px;">Lets play hangman!</h1><br>
+    <p style="padding-left: 80px">Guess these words or this man dies!</p><br>
+    <div class="winsBox"></div>
+    <div class="lossesBox"></div>
+    <div class="guessesBox"></div>
+    <div class="alreadyGuessedBox"></div>
+    <div class="lettersLeftBox"></div>
+    <div class="missedWordBox"></div><br>
+    <div class="buttonBox">
+      <input class="btn btn-primary"
+           type="button"
+           value="Reset">
+    </div><input class="btn btn-primary"
+         type="button"
+         value="Play Again">
+    <div class="hangmanBox"
+         style="position: relative; top: -500px; left: 690px; width: 650px;">
+      <img alt="hangman"
+           id="hangmanImg"
+           src="images/0.png"
+           style="position: absolute">
+      <div class="lettersBox"
+           style="text-align: center; margin: auto; position: relative;width: 650px; bottom: -410px;"></div>
+    </div>
+  </div>
+  <script type="text/javascript">
+
+    var winCount = 0;
+    var lossCount = 0;
+    var guessCount = 7;
+    var alreadyGuessed = [];
+    var userGuess = "";
+    var computerChoices = ["dungeon", "pikachu", "batman", "chalupa", "french fry", "el chubacabra", 
+                           "aligator","bob ross","timone and pumba", "ren and stimpy"];
+    var computerGuess = '';
+    var pointsToWin = 0;
+    var missedWord = '';
+
+    function updateScreen() {                       //updates all the elements on the screen like wins, loses, guesses, etc
+      $(".winsBox").html("Wins: "+winCount);        //used when a variable is changed but not updated.
+      $(".lossesBox").html("Losses: "+lossCount);
+      $(".guessesBox").html("Guesses left: "+guessCount);
+      $(".alreadyGuessedBox").html("Your guesses so far: "+alreadyGuessed);
+      $(".lettersLeftBox").html("Letters left to win: "+pointsToWin);
+      $(".missedWordBox").html("Phrase from last game: "+missedWord);
+    }
+    function startNewWord() {
+      $(".lettersBox").html('');
+      computerGuess = computerChoices[Math.floor(Math.random()*computerChoices.length)];  //resets a bunch of stuff back to zero
+      pointsToWin = computerGuess.length;                                                 //and destroys the old word boxes and 
+      alreadyGuessed = [];                                                                //makes new ones. displays the old word
+      userGuess = '';                                                                     //from the last game that you might have
+      guessCount = 7;                                                                     //missed
+      $("#hangmanImg").attr("src", "images/"+guessCount+".png");
+      updateScreen();
+
+      for (i=0;i<computerGuess.length;i++) {
+        $(".lettersBox").append("<div class='letters' style='float:left;font-size:30px;margin-left:5px;margin-right:5px;margin-bottom:5px;background:red;width:50px;height:50px;color:red' id="+computerGuess[i]+i+">"+computerGuess[i]+"<\/div>");
+      }
+    }
+
+
+
+    startNewWord();
+    updateScreen();
+
+    document.onkeydown = function(event) {  //when a key is pressed
+      userGuess = event.key;
+      console.log(userGuess);
+
+
+      if (userGuess.charCodeAt() > 96 && userGuess.charCodeAt() < 123 || userGuess.charCodeAt() == 32) {  //when only lowecase alphabet and spacebar is pressed:
+        
+        if (guessCount > 0) {
+
+            if  ($.inArray(userGuess, alreadyGuessed) >= 0) {         //if the letter has already been guessed, do nothing
+
+            }
+            else if (computerGuess.includes(userGuess)) {
+
+              for (i=0;i<computerGuess.length;i++) {
+                  if ($('#'+userGuess.trim()+i).hasClass("letters")) {  //finds the box that has the same letter in it, and turns it yellow
+                    $('#'+userGuess.trim()+i).css("background","yellow");
+                    pointsToWin--;                                        
+                  }
+                  if (pointsToWin == 0) {
+                    winCount++;
+                    missedWord = computerGuess;
+                    startNewWord();
+                    updateScreen();
+                  };
+              }
+              alreadyGuessed.push(userGuess);
+              updateScreen();
+            }
+            else {
+              alreadyGuessed.push(userGuess);  //updates the list of guessed words, and updates the image to reflect it
+              guessCount--;
+              $("#hangmanImg").attr("src", "images/"+guessCount+".png")
+              updateScreen();
+            }
+
+          }        
+          else {
+            alert("you ran out of tries, you lose!");  //when guesscount == 0 you lose!
+            lossCount++;
+            missedWord = computerGuess;
+            startNewWord();
+            updateScreen();
+          }
+
+        }
+      }
+
+
+    $(".btn").on("click", function() {
+
+      if ($(".btn").val() == "Reset"){ //reset button, clears everything even the score
+        winCount = 0;
+        lossCount = 0;
+        startNewWord();
+        updateScreen();
+      }
+      else if ($(".btn").val() == "Play Again"){ //starts the game over but keeps your score
+        startNewWord()
+        updateScreen();
+      }
+
+
+
+    });
+
+  </script>
+</body>
+</html>
